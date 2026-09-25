@@ -48,6 +48,8 @@
     .vc-thumb { position:relative; aspect-ratio:9/16; overflow:hidden; border-radius:10px; background:#111; border:1px solid rgba(213,161,30,.2); }
     .vc-thumb img { width:100%; height:100%; object-fit:cover; display:block; transition:transform .3s; }
     .vc:hover .vc-thumb img { transform:scale(1.04); }
+    .vc-thumb.fill img { transform:scale(1.19); }
+    .vc:hover .vc-thumb.fill img { transform:scale(1.23); }
     .vc-play { position:absolute; inset:0; display:flex; align-items:center; justify-content:center; background:rgba(0,0,0,.35); transition:background .2s; }
     .vc:hover .vc-play { background:rgba(0,0,0,.55); }
     .vc-play svg { filter:drop-shadow(0 2px 8px rgba(0,0,0,.8)); }
@@ -145,10 +147,14 @@
   var grid=document.querySelector('.vids-grid');
   if(!grid||location.protocol==='file:')return;
   function esc(s){return String(s).replace(/[&<>"']/g,function(c){return{'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];});}
+  /* Covers that have black bars baked into the thumbnail: zoom these to fill the frame.
+     Add a few words from a video title here to give another cover the same treatment. */
+  var FILL=['potential buyer came to look at our car','flew out of state for 2 car flips'];
+  function needsFill(title){var t=String(title||'').toLowerCase();return FILL.some(function(k){return t.indexOf(k)>-1;});}
   function card(v){
     var id=esc(v.id), t=esc(v.title||'');
     return '<a class="vc" href="'+esc(v.url)+'" target="_blank" rel="noopener">'+
-      '<div class="vc-thumb"><img src="https://i.ytimg.com/vi/'+id+'/oardefault.jpg" '+
+      '<div class="vc-thumb'+(needsFill(v.title)?' fill':'')+'"><img src="https://i.ytimg.com/vi/'+id+'/oardefault.jpg" '+
       'onerror="this.onerror=null;this.src=\'https://i.ytimg.com/vi/'+id+'/hqdefault.jpg\'" alt="'+t+'" loading="lazy"/>'+
       '<div class="vc-play"><svg viewBox="0 0 24 24" fill="white" width="44" height="44"><polygon points="5,3 19,12 5,21"/></svg></div></div>'+
       '<div class="vc-title">'+t+'</div></a>';
