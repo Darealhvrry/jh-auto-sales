@@ -277,5 +277,160 @@
   </div>
 </div>
 <footer class="page-footer">© 2026 J&H Auto Sales · Orlando, FL</footer>
+<style>
+/* ── Car details popup ── */
+.car-card img{cursor:zoom-in}
+.car-card .jh-tap{position:absolute;left:10px;bottom:10px;background:rgba(0,0,0,.72);color:#d5a11e;font-size:10px;font-weight:800;letter-spacing:1.2px;padding:5px 9px;border-radius:5px;border:1px solid rgba(213,161,30,.45);pointer-events:none;opacity:0;transition:opacity .2s}
+.car-card:hover .jh-tap{opacity:1}
+.jh-imgwrap{position:relative;display:block}
+.jh-msg-btn{display:inline-block;margin-top:2px}
+#jhModal{position:fixed;inset:0;z-index:9999;display:none;align-items:center;justify-content:center;padding:18px;background:rgba(0,0,0,.82);backdrop-filter:blur(3px)}
+#jhModal.open{display:flex}
+.jhm{position:relative;width:min(1080px,100%);max-height:calc(100vh - 36px);overflow:auto;background:#0b0b0b;border:1px solid rgba(213,161,30,.35);border-radius:14px;display:grid;grid-template-columns:1.25fr 1fr;color:#fff;font-family:inherit}
+.jhm-close{position:absolute;top:10px;right:12px;z-index:3;width:38px;height:38px;border-radius:50%;border:1px solid rgba(213,161,30,.5);background:#000;color:#d5a11e;font-size:22px;line-height:1;cursor:pointer}
+.jhm-media{background:#000;border-right:1px solid rgba(213,161,30,.2);display:flex;flex-direction:column}
+.jhm-tabs{display:flex;gap:6px;padding:12px;border-bottom:1px solid rgba(213,161,30,.15)}
+.jhm-tab{flex:1;padding:9px 6px;border-radius:7px;border:1px solid rgba(213,161,30,.35);background:#0d0d0d;color:#ccc;font-size:11px;font-weight:800;letter-spacing:1px;text-transform:uppercase;cursor:pointer}
+.jhm-tab.on{background:#d5a11e;color:#000;border-color:#d5a11e}
+.jhm-stage{position:relative;flex:1;min-height:320px;display:flex;align-items:center;justify-content:center;overflow:hidden}
+.jhm-stage img.jhm-photo{width:100%;height:100%;object-fit:contain;display:block;user-select:none;-webkit-user-drag:none}
+.jhm-spin{cursor:grab;touch-action:pan-y}
+.jhm-spin:active{cursor:grabbing}
+.jhm-hint{position:absolute;bottom:12px;left:50%;transform:translateX(-50%);background:rgba(0,0,0,.7);color:#fff;font-size:11px;padding:6px 12px;border-radius:20px;border:1px solid rgba(213,161,30,.4);white-space:nowrap}
+.jhm-soon{padding:30px;text-align:center;color:#aaa;font-size:14px;line-height:1.6}
+.jhm-soon b{display:block;color:#d5a11e;font-size:18px;margin-bottom:6px;letter-spacing:1px}
+#jhPano{position:absolute;inset:0}
+.jhm-info{padding:26px 24px 24px}
+.jhm-status{display:inline-block;font-size:11px;font-weight:800;letter-spacing:1.5px;padding:5px 10px;border-radius:5px;margin-bottom:10px}
+.jhm-status.sold{background:#dc1414;color:#fff}
+.jhm-status.avail{background:#1d3b12;color:#8be300;border:1px solid #3bd400}
+.jhm-status.soon{background:#2a2108;color:#d5a11e;border:1px solid rgba(213,161,30,.6)}
+.jhm h3{font-size:22px;line-height:1.2;margin:0 0 6px;padding-right:40px}
+.jhm-price{font-size:26px;font-weight:900;color:#d5a11e;margin-bottom:4px}
+.jhm-miles{color:#aaa;font-size:13px;margin-bottom:18px}
+.jhm-mpg{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:18px}
+.jhm-mpg div{background:#121212;border:1px solid rgba(213,161,30,.25);border-radius:10px;padding:12px 6px;text-align:center}
+.jhm-mpg strong{display:block;font-size:24px;color:#fff}
+.jhm-mpg span{font-size:10px;color:#999;letter-spacing:1.2px;text-transform:uppercase}
+.jhm-mpg div.main{border-color:#d5a11e}
+.jhm-mpg div.main strong{color:#d5a11e}
+.jhm-specs{list-style:none;padding:0;margin:0 0 14px}
+.jhm-specs li{display:flex;justify-content:space-between;gap:12px;padding:9px 0;border-bottom:1px solid #1f1f1f;font-size:13px}
+.jhm-specs li span{color:#999}
+.jhm-specs li b{text-align:right;font-weight:600}
+.jhm-note{font-size:11px;color:#777;line-height:1.5;margin-bottom:16px}
+.jhm-cta{display:inline-block;width:100%;text-align:center;padding:13px 16px;border-radius:7px;font-weight:900;letter-spacing:1.5px;font-size:13px;text-transform:uppercase;background:linear-gradient(135deg,#f5bf2c,#b78000);color:#080808;text-decoration:none}
+@media(max-width:820px){.jhm-tabs{padding-right:58px}.jhm{grid-template-columns:1fr}.jhm-media{border-right:none;border-bottom:1px solid rgba(213,161,30,.2)}.jhm-stage{min-height:240px}}
+</style>
+<div id="jhModal" role="dialog" aria-modal="true" aria-label="Car details">
+  <div class="jhm">
+    <button class="jhm-close" aria-label="Close">×</button>
+    <div class="jhm-media">
+      <div class="jhm-tabs">
+        <button class="jhm-tab on" data-v="photo">Photo</button>
+        <button class="jhm-tab" data-v="ext">360° Exterior</button>
+        <button class="jhm-tab" data-v="int">360° Interior</button>
+      </div>
+      <div class="jhm-stage" id="jhStage"></div>
+    </div>
+    <div class="jhm-info" id="jhInfo"></div>
+  </div>
+</div>
+<script>
+/* ── Car details popup: click any car photo ─────────────────────────────
+   SPECS: EPA figures for each model's standard engine (fueleconomy.gov).
+   JH_360: add photos here to turn on the 360° views for a car:
+     "2017 Toyota Camry LE": {
+        ext: ["camry-01.jpg","camry-02.jpg", ... ],   // 24–36 photos walking around the car, same distance, in order
+        int: "camry-interior-360.jpg"                  // one 360° panorama photo of the interior
+     }
+*/
+(function(){
+  var SPECS={"2013 Chevrolet Equinox LT": [22, 31, 26, "2.4L 4-cylinder", "6-speed automatic", "Front-wheel drive", "Regular gas", "Compact SUV"], "2017 GMC Terrain SLT": [21, 31, 25, "2.4L 4-cylinder", "6-speed automatic", "Front-wheel drive", "Regular gas", "Compact SUV"], "2013 Chevrolet Equinox 1LT": [22, 31, 26, "2.4L 4-cylinder", "6-speed automatic", "Front-wheel drive", "Regular gas", "Compact SUV"], "2017 Toyota Camry LE": [24, 33, 27, "2.5L 4-cylinder", "6-speed automatic", "Front-wheel drive", "Regular gas", "Midsize sedan"], "2016 Chrysler 200 Limited": [23, 36, 27, "2.4L 4-cylinder", "9-speed automatic", "Front-wheel drive", "Regular gas", "Midsize sedan"], "2019 Chevrolet Cruze LS Sedan 4D": [28, 38, 32, "1.4L turbo 4-cylinder", "6-speed automatic", "Front-wheel drive", "Regular gas", "Compact sedan"], "2011 Chevrolet Cruze 1LT Sedan": [22, 34, 26, "1.4L turbo 4-cylinder", "6-speed automatic", "Front-wheel drive", "Regular gas", "Compact sedan"], "2007 Acura MDX": [15, 20, 17, "3.7L V6", "5-speed automatic", "All-wheel drive (SH-AWD)", "Premium gas", "Midsize SUV, 3 rows"], "2017 Ford Focus SE Hatchback 4D": [26, 36, 29, "2.0L 4-cylinder", "6-speed automatic", "Front-wheel drive", "Regular gas", "Compact hatchback"], "2017 Chevrolet Equinox LT Sport Utility 4D": [21, 31, 25, "2.4L 4-cylinder", "6-speed automatic", "Front-wheel drive", "Regular gas", "Compact SUV"], "2019 Chevrolet Suburban LT Sport Utility 4D": [15, 22, 18, "5.3L V8", "6-speed automatic", "Rear-wheel drive", "Regular gas", "Full-size SUV, 3 rows"], "2017 Chevrolet Equinox LS Sport Utility 4D": [21, 31, 25, "2.4L 4-cylinder", "6-speed automatic", "Front-wheel drive", "Regular gas", "Compact SUV"], "2014 Nissan Maxima S Sedan 4D": [19, 26, 22, "3.5L V6", "CVT automatic", "Front-wheel drive", "Premium gas", "Midsize sedan"], "2019 Dodge Journey SE Sport Utility 4D": [19, 25, 21, "2.4L 4-cylinder", "4-speed automatic", "Front-wheel drive", "Regular gas", "Midsize SUV"], "2022 Hyundai Elantra SE Sedan 4D": [31, 41, 35, "2.0L 4-cylinder", "CVT automatic", "Front-wheel drive", "Regular gas", "Compact sedan"], "2014 Ford F-150 SuperCrew Cab XL Pickup 4D 6½ ft": [17, 23, 19, "3.7L V6", "6-speed automatic", "Rear-wheel drive", "Regular gas / E85", "Full-size pickup"], "2011 Kia Soul Wagon 4D": [24, 29, 26, "2.0L 4-cylinder", "4-speed automatic", "Front-wheel drive", "Regular gas", "Compact wagon"], "2016 Honda Accord Sport Sedan 4D": [26, 34, 29, "2.4L 4-cylinder", "CVT automatic", "Front-wheel drive", "Regular gas", "Midsize sedan"], "2014 BMW 3 Series 320i xDrive Sedan 4D": [23, 34, 27, "2.0L turbo 4-cylinder", "8-speed automatic", "All-wheel drive (xDrive)", "Premium gas", "Compact luxury sedan"], "2009 BMW M3 Coupe 2D": [14, 20, 16, "4.0L V8 (414 hp)", "7-speed dual-clutch", "Rear-wheel drive", "Premium gas", "Performance coupe"], "2015 Ford F-150 FX2 Pickup 2D 6½ ft": [19, 26, 22, "2.7L EcoBoost twin-turbo V6", "6-speed automatic", "Rear-wheel drive", "Regular gas", "Full-size pickup"], "2015 Nissan Altima 2.5 S Sedan 4D": [27, 37, 31, "2.5L 4-cylinder", "CVT automatic", "Front-wheel drive", "Regular gas", "Midsize sedan"], "2016 Toyota Camry SE Sedan 4D": [25, 34, 28, "2.5L 4-cylinder", "6-speed automatic", "Front-wheel drive", "Regular gas", "Midsize sedan"], "2019 Ford Fiesta SE Sedan 4D": [27, 37, 31, "1.6L 4-cylinder", "6-speed automatic", "Front-wheel drive", "Regular gas", "Subcompact sedan"], "2013 Ford F-150 SuperCab FX2 Pickup 4D 6½ ft": [15, 21, 17, "5.0L V8", "6-speed automatic", "Rear-wheel drive", "Regular gas / E85", "Full-size pickup"], "2019 Hyundai Sonata SE Sedan 4D": [26, 35, 29, "2.4L 4-cylinder", "6-speed automatic", "Front-wheel drive", "Regular gas", "Midsize sedan"], "2014 International MA065 DuraStar 4300": [null, null, null, "Diesel engine", "Ask us", "Rear-wheel drive", "Diesel", "Medium-duty flatbed truck"]};
+  var JH_360={};
+  var MESSAGE_URL='https://m.me/j.h.autosaIes';
+  var modal=document.getElementById('jhModal'), stage=document.getElementById('jhStage'), info=document.getElementById('jhInfo');
+  var cur=null, pano=null;
+  function norm(s){return String(s||'').replace(/ /g,' ').replace(/\s+/g,' ').trim();}
+  function esc(s){return String(s).replace(/[&<>"]/g,function(c){return{'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c];});}
+
+  // Available-inventory cards without a listing link get a MESSAGE US button
+  document.querySelectorAll('.car-card').forEach(function(card){
+    var img=card.querySelector('img'); if(!img) return;
+    var wrap=img.parentElement.classList.contains('card-wrap')?img.parentElement:null;
+    if(!wrap){wrap=document.createElement('div');wrap.className='jh-imgwrap';img.parentNode.insertBefore(wrap,img);wrap.appendChild(img);}
+    var tap=document.createElement('span');tap.className='jh-tap';tap.textContent='TAP FOR DETAILS';wrap.appendChild(tap);
+    var sold=!!card.querySelector('.sold-overlay')||!!card.closest('#sold')||document.body.dataset.page==='sold';
+    var body=card.querySelector('.car-body');
+    if(!sold && body && !body.querySelector('.detail-btn')){
+      var a=document.createElement('a');a.className='detail-btn jh-msg-btn';a.href=MESSAGE_URL;a.target='_blank';a.rel='noopener';a.textContent='MESSAGE US';body.appendChild(a);
+    }
+    img.addEventListener('click',function(){open(card,sold);});
+  });
+
+  function open(card,sold){
+    var name=norm(card.querySelector('h3').textContent);
+    var price=norm((card.querySelector('.price')||{}).textContent);
+    var miles=norm((card.querySelector('.meta span')||{}).textContent);
+    var link=card.querySelector('.detail-btn:not(.jh-msg-btn)');
+    var s=SPECS[name]||null;
+    cur={name:name,src:card.querySelector('img').src,r360:JH_360[name]||{}};
+    var status=sold?'<span class="jhm-status sold">SOLD</span>':(/coming/i.test(price)?'<span class="jhm-status soon">COMING SOON</span>':'<span class="jhm-status avail">AVAILABLE</span>');
+    var h=status+'<h3>'+esc(name)+'</h3>';
+    if(!/coming/i.test(price)) h+='<div class="jhm-price">'+esc(price)+(sold?' <span style="font-size:13px;color:#999;font-weight:600">sold price</span>':'')+'</div>';
+    h+='<div class="jhm-miles">'+esc(miles)+' on the odometer</div>';
+    if(s){
+      if(s[0]) h+='<div class="jhm-mpg"><div><strong>'+s[0]+'</strong><span>City MPG</span></div><div class="main"><strong>'+s[2]+'</strong><span>Combined</span></div><div><strong>'+s[1]+'</strong><span>Highway MPG</span></div></div>';
+      else h+='<div class="jhm-mpg" style="grid-template-columns:1fr"><div><strong style="font-size:16px">Commercial truck</strong><span>Not EPA mpg-rated</span></div></div>';
+      h+='<ul class="jhm-specs"><li><span>Engine</span><b>'+esc(s[3])+'</b></li><li><span>Transmission</span><b>'+esc(s[4])+'</b></li><li><span>Drivetrain</span><b>'+esc(s[5])+'</b></li><li><span>Fuel</span><b>'+esc(s[6])+'</b></li><li><span>Type</span><b>'+esc(s[7])+'</b></li></ul>';
+      h+='<div class="jhm-note">Specs and MPG are EPA figures for this model’s standard engine. Exact equipment can vary, so message us to confirm.</div>';
+    }
+    if(sold) h+='<a class="jhm-cta" href="'+MESSAGE_URL+'" target="_blank" rel="noopener">Want one like this? Message us</a>';
+    else if(link) h+='<a class="jhm-cta" href="'+esc(link.href)+'" target="_blank" rel="noopener">View details</a>';
+    else h+='<a class="jhm-cta" href="'+MESSAGE_URL+'" target="_blank" rel="noopener">Message us</a>';
+    info.innerHTML=h;
+    var has360=!!((cur.r360.ext||[]).length>1||cur.r360.int); modal.querySelector('.jhm-tabs').style.display=has360?'':'none'; show('photo'); modal.classList.add('open'); document.body.style.overflow='hidden';
+  }
+  function close(){modal.classList.remove('open');document.body.style.overflow='';killPano();}
+  function killPano(){if(pano&&pano.destroy){try{pano.destroy();}catch(e){}}pano=null;}
+  function tabs(v){modal.querySelectorAll('.jhm-tab').forEach(function(t){t.classList.toggle('on',t.dataset.v===v);});}
+  function soon(t){stage.innerHTML='<div class="jhm-soon"><b>'+t+' COMING SOON</b>We’re adding 360° views car by car.<br>Message us for more photos of this one.</div>';}
+
+  function show(v){
+    tabs(v); killPano();
+    if(v==='photo'){stage.innerHTML='<img class="jhm-photo" alt="'+esc(cur.name)+'" src="'+cur.src+'">';return;}
+    if(v==='ext'){
+      var fr=cur.r360.ext||[]; if(fr.length<2){soon('360° EXTERIOR');return;}
+      stage.innerHTML='<img class="jhm-photo jhm-spin" draggable="false" alt="360 view of '+esc(cur.name)+'"><div class="jhm-hint">⟷ Drag to spin</div>';
+      var im=stage.querySelector('img'), i=0, x0=null, i0=0;
+      fr.forEach(function(u){var p=new Image();p.src=u;});
+      function set(n){i=((n%fr.length)+fr.length)%fr.length;im.src=fr[i];}
+      set(0);
+      im.addEventListener('pointerdown',function(e){x0=e.clientX;i0=i;im.setPointerCapture(e.pointerId);});
+      im.addEventListener('pointermove',function(e){if(x0===null)return;set(i0+Math.round((x0-e.clientX)/Math.max(4,im.clientWidth/fr.length)));});
+      im.addEventListener('pointerup',function(){x0=null;var h=stage.querySelector('.jhm-hint');if(h)h.remove();});
+      return;
+    }
+    if(v==='int'){
+      var p=cur.r360.int; if(!p){soon('360° INTERIOR');return;}
+      stage.innerHTML='<div id="jhPano"></div>';
+      loadPannellum(function(){pano=window.pannellum.viewer('jhPano',{type:'equirectangular',panorama:p,autoLoad:true,showControls:true,compass:false,hfov:100});});
+    }
+  }
+  var pl=null;
+  function loadPannellum(cb){
+    if(window.pannellum) return cb();
+    if(pl){pl.push(cb);return;} pl=[cb];
+    var c=document.createElement('link');c.rel='stylesheet';c.href='https://cdnjs.cloudflare.com/ajax/libs/pannellum/2.5.6/pannellum.css';document.head.appendChild(c);
+    var s=document.createElement('script');s.src='https://cdnjs.cloudflare.com/ajax/libs/pannellum/2.5.6/pannellum.js';
+    s.onload=function(){pl.forEach(function(f){f();});};document.head.appendChild(s);
+  }
+  modal.querySelectorAll('.jhm-tab').forEach(function(t){t.addEventListener('click',function(){show(t.dataset.v);});});
+  modal.querySelector('.jhm-close').addEventListener('click',close);
+  modal.addEventListener('click',function(e){if(e.target===modal)close();});
+  document.addEventListener('keydown',function(e){if(e.key==='Escape'&&modal.classList.contains('open'))close();});
+})();
+</script>
+
 </body>
 </html>
