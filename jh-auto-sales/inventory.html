@@ -158,7 +158,7 @@
         <h3>2014 International MA065 DuraStar 4300</h3>
         <div class="price">$20,000</div>
         <div class="meta"><span>148,000 mi</span></div>
-        <a class="detail-btn" href="https://www.facebook.com/marketplace/item/1089532373585924" target="_blank" rel="noopener">VIEW ON MARKETPLACE</a>
+        <a class="detail-btn" href="https://www.facebook.com/marketplace/item/1089532373585924" target="_blank" rel="noopener">MESSAGE US</a>
       </div>
     </div>
 
@@ -249,10 +249,6 @@
     if(!wrap){wrap=document.createElement('div');wrap.className='jh-imgwrap';img.parentNode.insertBefore(wrap,img);wrap.appendChild(img);}
     var tap=document.createElement('span');tap.className='jh-tap';tap.textContent='TAP FOR DETAILS';wrap.appendChild(tap);
     var sold=!!card.querySelector('.sold-overlay')||!!card.closest('#sold')||document.body.dataset.page==='sold';
-    var body=card.querySelector('.car-body');
-    if(!sold && body && !body.querySelector('.detail-btn')){
-      var a=document.createElement('a');a.className='detail-btn jh-msg-btn';a.href=MESSAGE_URL;a.target='_blank';a.rel='noopener';a.textContent='MESSAGE US';body.appendChild(a);
-    }
     img.addEventListener('click',function(){open(card,sold);});
   });
 
@@ -260,7 +256,7 @@
     var name=norm(card.querySelector('h3').textContent);
     var price=norm((card.querySelector('.price')||{}).textContent);
     var miles=norm((card.querySelector('.meta span')||{}).textContent);
-    var link=card.querySelector('.detail-btn:not(.jh-msg-btn)');
+    var link=card.querySelector('.detail-btn');
     var s=SPECS[name]||null;
     cur={name:name,src:card.querySelector('img').src,r360:JH_360[name]||{}};
     var status=sold?'<span class="jhm-status sold">SOLD</span>':(/coming/i.test(price)?'<span class="jhm-status soon">COMING SOON</span>':'<span class="jhm-status avail">AVAILABLE</span>');
@@ -273,9 +269,7 @@
       h+='<ul class="jhm-specs"><li><span>Engine</span><b>'+esc(s[3])+'</b></li><li><span>Transmission</span><b>'+esc(s[4])+'</b></li><li><span>Drivetrain</span><b>'+esc(s[5])+'</b></li><li><span>Fuel</span><b>'+esc(s[6])+'</b></li><li><span>Type</span><b>'+esc(s[7])+'</b></li></ul>';
       h+='<div class="jhm-note">Specs and MPG are EPA figures for this model’s standard engine. Exact equipment can vary, so message us to confirm.</div>';
     }
-    if(sold) h+='<a class="jhm-cta" href="'+MESSAGE_URL+'" target="_blank" rel="noopener">Want one like this? Message us</a>';
-    else if(link) h+='<a class="jhm-cta" href="'+esc(link.href)+'" target="_blank" rel="noopener">View details</a>';
-    else h+='<a class="jhm-cta" href="'+MESSAGE_URL+'" target="_blank" rel="noopener">Message us</a>';
+    if(!sold && link) h+='<a class="jhm-cta" href="'+esc(link.href)+'" target="_blank" rel="noopener">'+esc(norm(link.textContent))+'</a>';
     info.innerHTML=h;
     var has360=!!((cur.r360.ext||[]).length>1||cur.r360.int); modal.querySelector('.jhm-tabs').style.display=has360?'':'none'; show('photo'); modal.classList.add('open'); document.body.style.overflow='hidden';
   }
